@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     kotlin("multiplatform") version "2.3.20"
+    id("com.vanniktech.maven.publish") version "0.36.0"
 }
 
 group = "org.ntqqrev"
@@ -81,4 +82,40 @@ kotlin {
     }
 
     jvmToolchain(21)
+}
+
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+
+    coordinates(
+        groupId = project.group.toString(),
+        artifactId = project.name,
+        version = project.version.toString()
+    )
+
+    pom {
+        name = project.name
+        description = "A minimal wrapper for kotlinx.io.files with proper Windows non-ASCII path support"
+        url = "https://github.com/SaltifyDev/ktfs"
+        inceptionYear = "2026"
+        licenses {
+            license {
+                name = "MIT License"
+                url = "https://opensource.org/licenses/MIT"
+            }
+        }
+        developers {
+            developer {
+                id = "Wesley-Young"
+                name = "Wesley F. Young"
+                email = "wesley.f.young@outlook.com"
+            }
+        }
+        scm {
+            connection = "scm:git:git://github.com/SaltifyDev/ktfs.git"
+            developerConnection = "scm:git:ssh://github.com/SaltifyDev/ktfs.git"
+            url = "https://github.com/SaltifyDev/ktfs"
+        }
+    }
 }
