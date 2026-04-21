@@ -1,0 +1,84 @@
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class, ExperimentalWasmDsl::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
+plugins {
+    kotlin("multiplatform") version "2.3.20"
+}
+
+group = "org.ntqqrev"
+version = "0.1.0"
+
+repositories {
+    mavenCentral()
+}
+
+kotlin {
+    jvm()
+
+    js {
+        browser()
+        nodejs()
+    }
+    wasmJs {
+        nodejs()
+    }
+    wasmWasi {
+        nodejs()
+    }
+
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
+
+    // tvosX64() - Deprecated since 2.3.20
+    tvosArm64()
+    tvosSimulatorArm64()
+
+    watchosArm32()
+    watchosArm64()
+    // watchosX64() - Deprecated since 2.3.20
+    watchosSimulatorArm64()
+    watchosDeviceArm64()
+
+    androidNativeArm32()
+    androidNativeArm64()
+    androidNativeX64()
+    androidNativeX86()
+
+    linuxX64()
+    linuxArm64()
+    // linuxArm32Hfp() - Deprecated since 2.3.20
+
+    // macosX64() - Deprecated since 2.3.20
+    macosArm64()
+
+    mingwX64()
+
+    applyDefaultHierarchyTemplate {
+        common {
+            group("wrapped") {
+                withJvm()
+                withJs()
+                withWasmJs()
+                withWasmWasi()
+                withApple()
+                withAndroidNative()
+                withLinux()
+            }
+        }
+    }
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.9.0")
+        }
+
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
+    }
+
+    jvmToolchain(21)
+}
