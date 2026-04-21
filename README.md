@@ -1,5 +1,7 @@
 # ktfs
 
+[![Maven Central](https://img.shields.io/maven-central/v/org.ntqqrev/ktfs)](https://central.sonatype.com/artifact/org.ntqqrev/ktfs/)
+
 ktfs is a lightweight wrapper around `kotlinx.io.files` that fixes non-ASCII path handling on Windows.
 
 It wraps the file system implementation of `kotlinx-io` except for `mingwX64` target. Windows file system is re-implemented using `platform.windows` wide character APIs, fixing the issue that paths with non-ASCII characters (for example, Chinese characters) cannot be accessed via the original implementation.
