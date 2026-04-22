@@ -11,9 +11,7 @@ It wraps the file system implementation of `kotlinx-io` except for `mingwX64` ta
 ### The `withFs` DSL
 
 ```kotlin
-inline fun withFs(fs: FileSystem = defaultFileSystem, block: FileSystem.() -> Unit) {
-    block(fs)
-}
+inline fun <R> withFs(fs: FileSystem = defaultFileSystem, block: FileSystem.() -> R): R
 ```
 
 You can use `withFs` to execute a block of code with a specific file system implementation. By default, it uses the platform's default file system.

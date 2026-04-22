@@ -1,13 +1,11 @@
 package org.ntqqrev.ktfs
 
-import kotlinx.io.RawSink
-import kotlinx.io.RawSource
-import kotlinx.io.buffered
+import kotlinx.io.*
 import kotlinx.io.files.FileMetadata
 import kotlinx.io.files.Path
-import kotlinx.io.readByteArray
-import kotlinx.io.readString
-import kotlinx.io.writeString
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 interface FileSystem {
     fun exists(path: Path): Boolean
@@ -47,6 +45,10 @@ interface FileSystem {
 
 expect val defaultFileSystem: FileSystem
 
-inline fun withFs(fs: FileSystem = defaultFileSystem, block: FileSystem.() -> Unit) {
-    block(fs)
+@OptIn(ExperimentalContracts::class)
+inline fun <R> withFs(fs: FileSystem = defaultFileSystem, block: FileSystem.() -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return fs.block()
 }
