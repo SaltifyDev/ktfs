@@ -13,6 +13,84 @@ class FileSystemTest {
     private val fs = defaultFileSystem
 
     @Test
+    fun withFsPathDslCoversHighFrequencyOperations() = withTemporaryRoot("withFs扩展") { root ->
+        withFs(fs) {
+            val dataDir = Path(root, "资料")
+            val textFile = Path(Path(dataDir, "日志"), "今天.txt")
+            val binaryFile = Path(dataDir, "原始数据.bin")
+            val movedFile = Path(dataDir, "归档.txt")
+            val text = "第一段\n第二段"
+            val binary = byteArrayOf(7, 8, 9) + "中文".encodeToByteArray()
+
+            assertFalse(textFile.exists)
+            assertNull(textFile.metadataOrNull)
+            assertFalse(textFile.isRegularFile)
+            assertFalse(dataDir.isDirectory)
+
+            textFile.writeText(text, createParentDirectories = true)
+            binaryFile.writeBytes(binary, createParentDirectories = true)
+
+            assertTrue(dataDir.exists)
+            assertTrue(dataDir.isDirectory)
+            assertTrue(textFile.exists)
+            assertTrue(textFile.isRegularFile)
+            assertEquals(text.encodeToByteArray().size.toLong(), textFile.metadataOrNull?.size)
+            assertEquals(text, textFile.readText())
+            assertContentEquals(binary, binaryFile.readBytes())
+
+            val listedNames = dataDir.children.map(Path::name).toSet()
+            assertEquals(setOf("日志", "原始数据.bin"), listedNames)
+
+            textFile.moveTo(movedFile)
+            assertFalse(textFile.exists)
+            assertTrue(movedFile.exists)
+            assertEquals(text, movedFile.readText())
+
+            assertFalse(textFile.deleteIfExists())
+            assertTrue(binaryFile.deleteIfExists())
+            assertFalse(binaryFile.exists)
+
+            val resolved = movedFile.absolute
+            assertTrue(resolved.isAbsolute)
+            assertEquals("归档.txt", resolved.name)
+        }
+    }
+
+    @Test
+    fun writeHelpersCanCreateParentsAndKeepLegacyWriteOverloadsWorking() = withTemporaryRoot("写入辅助") { root ->
+        withFs(fs) {
+            val nestedText = Path(Path(root, "深层"), "文本.txt")
+            val nestedBinary = Path(Path(root, "二进制"), "数据.bin")
+            val text = "alpha"
+            val moreText = "-beta"
+            val bytes = byteArrayOf(1, 3, 5, 7)
+
+            nestedText.writeText(text, createParentDirectories = true)
+            nestedText.writeText(moreText, append = true)
+            nestedBinary.writeBytes(bytes, createParentDirectories = true)
+            nestedBinary.writeBytes(byteArrayOf(9), append = true)
+
+            assertEquals("alpha-beta", nestedText.readText())
+            assertContentEquals(byteArrayOf(1, 3, 5, 7, 9), nestedBinary.readBytes())
+        }
+    }
+
+    @Test
+    fun writeHelpersRespectParentDirectoryCreationFlag() = withTemporaryRoot("父目录策略") { root ->
+        withFs(fs) {
+            val missingParentTextFile = Path(Path(root, "不存在的目录"), "文本.txt")
+            val missingParentBinaryFile = Path(Path(root, "不存在的目录2"), "数据.bin")
+
+            assertFails {
+                missingParentTextFile.writeText("x")
+            }
+            assertFails {
+                missingParentBinaryFile.writeBytes(byteArrayOf(1))
+            }
+        }
+    }
+
+    @Test
     fun cjkDirectoryAndTextRoundTrip() = withTemporaryRoot("目录读写") { root ->
         val topLevel = Path(root, "中文目录")
         val nested = Path(Path(topLevel, "二级_日本語"), "세번째_한글")
